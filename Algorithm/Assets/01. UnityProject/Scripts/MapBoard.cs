@@ -5,16 +5,22 @@ using UnityEngine;
 public class MapBoard : MonoBehaviour
 {
     private const string TERRAIN_MAP_OBJ_NAME = "TerrainGrid";
+    private const string OBSTACLE_MAP_OBJ_NAME = "ObstacleGrid";
 
     public Vector2Int MapCellSize { get; private set; } = default;
     public Vector2 MapCellGap { get; private set; } = default;
 
     private TerrainMap terrainMap = default;
+    private ObstacleMap obstacleMap = default;
 
     private void Awake()
     {
         // { 매니저 스크립트를 초기화한다.
         ResManager.Instance.Create();
+
+        // PathFinder 초기화
+        PathFinder.Instance.Create();
+        PathFinder.Instance.mapBoard = this;
         // } 매니저 스크립트를 초기화한다.
 
         // { 맵에 지형을 초기화하여 배치한다.
@@ -23,6 +29,11 @@ public class MapBoard : MonoBehaviour
         MapCellSize = terrainMap.GetCellSize();
         MapCellGap = terrainMap.GetCellGap();
         // } 맵에 지형을 초기화하여 배치한다.
+
+        // { 맵에 지물을 초기화하여 배치한다.
+        obstacleMap = gameObject.FindChildComponent<ObstacleMap>(OBSTACLE_MAP_OBJ_NAME);
+        obstacleMap.InitAwake(this);
+        // } 맵에 지물을 초기화하여 배치한다.
     }
 
     //! 타일 인덱스를 받아서 해당 타일을 리턴하는 함수

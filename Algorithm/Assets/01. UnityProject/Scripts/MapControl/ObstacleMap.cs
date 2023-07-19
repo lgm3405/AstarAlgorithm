@@ -5,7 +5,7 @@ using UnityEngine;
 public class ObstacleMap : TileMapController
 {
     private const string OBSTACLE_TILEMAP_OBJ_NAME = "ObstacleTilemap";
-    private GameObject[] castleobjs = default;          //!< 길찾기 알고리즘을 테스트 할 출발지와 목적지를 캐싱한 오브젝트 배열
+    private GameObject[] castleObjs = default;          //!< 길찾기 알고리즘을 테스트 할 출발지와 목적지를 캐싱한 오브젝트 배열
 
 
     //! Awake 타임에 초기화 할 내용을 재정의한다.
@@ -29,7 +29,7 @@ public class ObstacleMap : TileMapController
     private void DoStart()
     {
         // { 출발지와 목적지를 설정해서 타일을 배치한다.
-        castleobjs = new GameObject[2];
+        castleObjs = new GameObject[2];
         TerrainController[] passableTerrains = new TerrainController[2];
 
         List<TerrainController> searchTerrains = default;
@@ -79,13 +79,31 @@ public class ObstacleMap : TileMapController
             if (foundTile != null || foundTile != default) { break; }
             if (searchIdx <= 0) { break; }
             searchIdx--;
-        }           // loop: 목적지를 찾는 루프
+        }            // loop: 목적지를 찾는 루프
         passableTerrains[1] = foundTile;
 
         // } 출발지와 목적지를 설정해서 타일을 배치한다.
 
         // { 출발지와 목적지에 지물을 추가한다.
-        
+        GameObject changeTilePrefab = ResManager.Instance.obstaclePrefabs[RDefine.OBSTACLE_PREF_PLAIN_CASTLE];
+        GameObject tempChangeTile = default;
+        for (int i = 0; i < 2; i++)
+        {
+            tempChangeTile = Instantiate(changeTilePrefab, tileMap.transform);
+            tempChangeTile.name = string.Format("{0}_{1}", changeTilePrefab.name, passableTerrains[i].TileIdx1D);
+            tempChangeTile.SetLocalScale(passableTerrains[i].transform.localScale);
+
+            tempChangeTile.SetLocalScale(passableTerrains[i].transform.localScale);
+            tempChangeTile.SetLocalPos(passableTerrains[i].transform.localPosition);
+
+            castleObjs[i] = tempChangeTile;
+            Add_obstacle(tempChangeTile);
+
+            tempChangeTile = default;
+        }          // loop: 출발지와 목적지를 인스턴스화해서 캐싱하는 루프
+
+        Update_SourDestToPathFinder();
+
         // } 출발지와 목적지에 지물을 추가한다.
     }         // DoStart()
 
@@ -95,5 +113,10 @@ public class ObstacleMap : TileMapController
         allTileobjs.Add(obstacle_);
     }         // Add_Obstacle()
 
-
+    //! 패스 파인더에 출발지와 목적지를 설정한다.
+    public void Update_SourDestToPathFinder()
+    {
+        PathFinder.Instance.sourceObj = castleObjs[0];
+        PathFinder.Instance.destinationObj = castleObjs[1];
+    }        // Update_SourDestToPathFinder()
 }
